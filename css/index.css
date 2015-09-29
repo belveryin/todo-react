@@ -7,3 +7,7 @@
     line-height: 1.2;
     transition: color 0.4s ease 0s;
 }
+
+.todo-list li.completed span {
+    text-decoration: line-through;
+}
