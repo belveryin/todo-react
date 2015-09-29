@@ -13,7 +13,8 @@ var CONST = {
         ACTIVE_TODOS: 'active',
         COMPLETED_TODOS: 'completed'
     },
-    ENTER_KEY: 13
+    ENTER_KEY: 13,
+    ESCAPE_KEY: 27
 };
 
 var TodoApp = React.createClass({
@@ -177,6 +178,7 @@ var TodoApp = React.createClass({
         return (<div></div>);
     }
 });
+export default {TodoModel, CONST};
 
 var model = new TodoModel('react-todos');
 
@@ -189,5 +191,3 @@ function render() {
 
 model.subscribe(render);
 render();
-
-export default {TodoModel, CONST};

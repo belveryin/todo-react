@@ -1,6 +1,8 @@
 import React from 'react';
 import Utils from 'utils';
 import classNames from 'classnames';
+// TODO: unable to import with syntax: import {TodoModel, CONST} from 'app';
+import app from 'app';
 
 var TodoFooter = React.createClass({
     render: function () {
@@ -18,7 +20,6 @@ var TodoFooter = React.createClass({
         }
 
         // Cache `classNames` since it'll be used often
-        // var cx = React.addons.classSet;
         var cx = classNames;
         var nowShowing = this.props.nowShowing;
         return (
@@ -30,8 +31,7 @@ var TodoFooter = React.createClass({
                     <li>
                         <a
                             href="#/"
-        // TODO: replace 'all' with a constant
-                            className={cx({selected: nowShowing === 'all'})}>
+                            className={cx({selected: nowShowing === app.CONST.STATUS.ALL_TODOS})}>
                                 All
                         </a>
                     </li>
@@ -39,8 +39,7 @@ var TodoFooter = React.createClass({
                     <li>
                         <a
                             href="#/active"
-        // TODO: replace 'active' with a constant
-                            className={cx({selected: nowShowing === 'active'})}>
+                            className={cx({selected: nowShowing === app.CONST.STATUS.ACTIVE_TODOS})}>
                                 Active
                         </a>
                     </li>
@@ -48,8 +47,7 @@ var TodoFooter = React.createClass({
                     <li>
                         <a
                             href="#/completed"
-        // TODO: replace 'completed' with a constant
-                            className={cx({selected: nowShowing === 'completed'})}>
+                            className={cx({selected: nowShowing === app.CONST.STATUS.COMPLETED_TODOS})}>
                                 Completed
                         </a>
                     </li>
