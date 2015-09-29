@@ -7,7 +7,7 @@ import TodoFooter from 'footer';
 require("../node_modules/todomvc-app-css/index.css");
 require("../css/index.css");
 
-var CONST = {
+const CONST = {
     STATUS: {
         ALL_TODOS: 'all',
         ACTIVE_TODOS: 'active',
@@ -17,87 +17,83 @@ var CONST = {
     ESCAPE_KEY: 27
 };
 
-var TodoApp = React.createClass({
-    getInitialState: function () {
-        return {
-            nowShowing: CONST.STATUS.ALL_TODOS,
-            editing: null
-        };
-    },
+class TodoApp extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {}
+    }
 
-    componentDidMount: function () {
-        var setState = this.setState;
-        var router = Router({
+    componentDidMount() {
+        const setState = this.setState;
+        const router = Router({
             '/': setState.bind(this, {nowShowing: CONST.STATUS.ALL_TODOS}),
             '/active': setState.bind(this, {nowShowing: CONST.STATUS.ACTIVE_TODOS}),
             '/completed': setState.bind(this, {nowShowing: CONST.STATUS.COMPLETED_TODOS})
         });
         router.init('/');
-    },
+    }
 
-    handleNewTodoKeyDown: function (event) {
+    handleNewTodoKeyDown(event) {
         if (event.keyCode !== CONST.ENTER_KEY) {
             return;
         }
 
         event.preventDefault();
 
-        var val = React.findDOMNode(this.refs.newField).value.trim();
+        const val = React.findDOMNode(this.refs.newField).value.trim();
 
         if (val) {
             this.props.model.addTodo(val);
             React.findDOMNode(this.refs.newField).value = '';
         }
-    },
+    }
 
-    toggleAll: function (event) {
-        var checked = event.target.checked;
+    toggleAll(event) {
+        const checked = event.target.checked;
         this.props.model.toggleAll(checked);
-    },
+    }
 
-    toggle: function (todoToToggle) {
+    toggle(todoToToggle) {
         this.props.model.toggle(todoToToggle);
-    },
+    }
 
-    destroy: function (todo) {
+    destroy(todo) {
         this.props.model.destroy(todo);
-    },
+    }
 
-    edit: function (todo) {
+    edit(todo) {
         this.setState({editing: todo.id});
-    },
+    }
 
-    save: function (todoToSave, text) {
+    save(todoToSave, text) {
         this.props.model.save(todoToSave, text);
         this.setState({editing: null});
-    },
+    }
 
-    cancel: function () {
+    cancel() {
         this.setState({editing: null});
-    },
+    }
 
-    clearCompleted: function () {
+    clearCompleted() {
         this.props.model.clearCompleted();
-    },
+    }
 
-    swap: function() {
-    this.props.model.swap();
-    },
+    swap() {
+        this.props.model.swap();
+    }
 
-    setFrom: function(fromIdx) {
-    this.props.model.setFrom(fromIdx);
-    },
+    setFrom(fromIdx) {
+        this.props.model.setFrom(fromIdx);
+    }
 
-    setTo: function(toIdx) {
-    this.props.model.setTo(toIdx);
-    },
+    setTo(toIdx) {
+        this.props.model.setTo(toIdx);
+    }
 
-    render: function () {
-        var footer;
-        var main;
-        var todos = this.props.model.todos;
+    render() {
+        const todos = this.props.model.todos;
 
-        var shownTodos = todos.filter(function (todo) {
+        const shownTodos = todos.filter(todo => {
             switch (this.state.nowShowing) {
                 case CONST.STATUS.ACTIVE_TODOS:
                     return !todo.completed;
@@ -108,48 +104,47 @@ var TodoApp = React.createClass({
             }
         }, this);
 
-        var todoItems = shownTodos.map(function (todo) {
+        const todoItems = shownTodos.map(todo => {
             return (
                 <TodoItem
                     draggable="true"
                     key={todo.id}
                     todo={todo}
-                    swap={this.swap}
-                    setFrom={this.setFrom}
-                    setTo={this.setTo}
+                    swap={this.swap.bind(this)}
+                    setFrom={this.setFrom.bind(this)}
+                    setTo={this.setTo.bind(this)}
                     onToggle={this.toggle.bind(this, todo)}
                     onDestroy={this.destroy.bind(this, todo)}
                     onEdit={this.edit.bind(this, todo)}
                     editing={this.state.editing === todo.id}
                     onSave={this.save.bind(this, todo)}
-                    onCancel={this.cancel}
+                    onCancel={this.cancel.bind(this)}
                 />
             );
         }, this);
 
-        var activeTodoCount = todos.reduce(function (accum, todo) {
-            return todo.completed ? accum : accum + 1;
-        }, 0);
+        const activeTodoCount = todos.reduce((accum, todo) => todo.completed ? accum : accum + 1, 0);
+        const completedCount = todos.length - activeTodoCount;
 
-        var completedCount = todos.length - activeTodoCount;
-
+        let footer;
         if (activeTodoCount || completedCount) {
             footer =
                 <TodoFooter
                     count={activeTodoCount}
                     completedCount={completedCount}
                     nowShowing={this.state.nowShowing}
-                    onClearCompleted={this.clearCompleted}
+                    onClearCompleted={this.clearCompleted.bind(this)}
                 />;
         }
 
+        let main;
         if (todos.length) {
             main = (
                 <section className="main">
                     <input
                         className="toggle-all"
                         type="checkbox"
-                        onChange={this.toggleAll}
+                        onChange={this.toggleAll.bind(this)}
                         checked={activeTodoCount === 0}
                     />
                     <ul className="todo-list">
@@ -167,7 +162,7 @@ var TodoApp = React.createClass({
                         ref="newField"
                         className="new-todo"
                         placeholder="What needs to be done?"
-                        onKeyDown={this.handleNewTodoKeyDown}
+                        onKeyDown={this.handleNewTodoKeyDown.bind(this)}
                         autoFocus={true}
                     />
                 </header>
@@ -177,17 +172,18 @@ var TodoApp = React.createClass({
         );
         return (<div></div>);
     }
-});
+}
+
 export default {TodoModel, CONST};
 
-var model = new TodoModel('react-todos');
+const model = new TodoModel('react-todos');
 
-function render() {
+const render = () => {
     React.render(
         <TodoApp model={model}/>,
         document.getElementsByClassName('todoapp')[0]
     );
-}
+};
 
 model.subscribe(render);
 render();

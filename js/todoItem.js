@@ -3,53 +3,39 @@ import Utils from 'utils';
 import classNames from 'classnames';
 import app from 'app';
 
-var TodoItem = React.createClass({
-    handleSubmit: function (event) {
-        var val = this.state.editText.trim();
+class TodoItem extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {}
+    }
+
+    handleSubmit(event) {
+        const val = this.state.editText.trim();
         if (val) {
             this.props.onSave(val);
             this.setState({editText: val});
         } else {
             this.props.onDestroy();
         }
-    },
+    }
 
-    handleEdit: function () {
+    handleEdit() {
         this.props.onEdit();
         this.setState({editText: this.props.todo.title});
-    },
+    }
 
-    handleKeyDown: function (event) {
+    handleKeyDown(event) {
         if (event.which === app.CONST.ESCAPE_KEY) {
             this.setState({editText: this.props.todo.title});
             this.props.onCancel(event);
         } else if (event.which === app.CONST.ENTER_KEY) {
             this.handleSubmit(event);
         }
-    },
+    }
 
-    handleChange: function (event) {
+    handleChange(event) {
         this.setState({editText: event.target.value});
-    },
-
-    getInitialState: function () {
-        return {editText: this.props.todo.title};
-    },
-
-    /**
-     * This is a completely optional performance enhancement that you can
-     * implement on any React component. If you were to delete this method
-     * the app would still work correctly (and still be very performant!), we
-     * just use it as an example of how little code it takes to get an order
-     * of magnitude performance improvement.
-     */
-    shouldComponentUpdate: function (nextProps, nextState) {
-        return (
-            nextProps.todo !== this.props.todo ||
-            nextProps.editing !== this.props.editing ||
-            nextState.editText !== this.state.editText
-        );
-    },
+    }
 
     /**
      * Safely manipulate the DOM after updating the state when invoking
@@ -57,15 +43,15 @@ var TodoItem = React.createClass({
      * For more info refer to notes at https://facebook.github.io/react/docs/component-api.html#setstate
      * and https://facebook.github.io/react/docs/component-specs.html#updating-componentdidupdate
      */
-    componentDidUpdate: function (prevProps) {
+    componentDidUpdate(prevProps) {
         if (!prevProps.editing && this.props.editing) {
-            var node = React.findDOMNode(this.refs.editField);
+            const node = React.findDOMNode(this.refs.editField);
             node.focus();
             node.setSelectionRange(node.value.length, node.value.length);
         }
-    },
+    }
 
-    dragStart: function(event) {
+    dragStart(event) {
         event.dataTransfer.effectAllowed = 'move';
 
         // Firefox requires calling dataTransfer.setData
@@ -73,15 +59,15 @@ var TodoItem = React.createClass({
         event.dataTransfer.setData("text/html", event.currentTarget);
 
         this.props.setFrom(Utils.indexOfChild(event.currentTarget));
-    },
+    }
 
-    dragOver: function(event) {
+    dragOver(event) {
         event.preventDefault();
 
         this.props.setTo(Utils.indexOfChild(event.currentTarget));
-    },
+    }
 
-    render: function () {
+    render() {
         return (
             <li className={classNames({
                     completed: this.props.todo.completed,
@@ -89,8 +75,8 @@ var TodoItem = React.createClass({
                 })}
                 /* Add drag and drop handling */
                 draggable="true"
-                onDragStart={this.dragStart}
-                onDragOver={this.dragOver}>
+                onDragStart={this.dragStart.bind(this)}
+                onDragOver={this.dragOver.bind(this)}>
                 <div className="view">
                     <input
                         className="toggle"
@@ -99,7 +85,7 @@ var TodoItem = React.createClass({
                         onChange={this.props.onToggle}
                     />
                     {/* Change label for span to be able to drag in Firefox */}
-                    <span onDoubleClick={this.handleEdit}>
+                    <span onDoubleClick={this.handleEdit.bind(this)}>
                         {this.props.todo.title}
                     </span>
                     <button className="destroy" onClick={this.props.onDestroy} />
@@ -108,13 +94,13 @@ var TodoItem = React.createClass({
                     ref="editField"
                     className="edit"
                     value={this.state.editText}
-                    onBlur={this.handleSubmit}
-                    onChange={this.handleChange}
-                    onKeyDown={this.handleKeyDown}
+                    onBlur={this.handleSubmit.bind(this)}
+                    onChange={this.handleChange.bind(this)}
+                    onKeyDown={this.handleKeyDown.bind(this)}
                 />
             </li>
         );
     }
-});
+}
 
 export default TodoItem;

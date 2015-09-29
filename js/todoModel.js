@@ -1,5 +1,3 @@
-// var app = app || {};
-
 import Utils from 'utils';
 
 // Generic "model" object. You can use whatever
@@ -7,112 +5,103 @@ import Utils from 'utils';
 // may not even be worth separating this logic
 // out, but we do this to demonstrate one way to
 // separate out parts of your application.
-var TodoModel = function(key) {
-    this.key = key;
-    this.todos = Utils.store(key);
-    this.onChanges = [];
-};
+class TodoModel {
+    constructor(key) {
+        this.key = key;
+        this.todos = Utils.store(key);
+        this.onChanges = [];
+    }
 
-TodoModel.prototype.subscribe = function(onChange) {
-    this.onChanges.push(onChange);
-};
+    subscribe(onChange) {
+        this.onChanges.push(onChange);
+    }
 
-TodoModel.prototype.inform = function() {
-    Utils.store(this.key, this.todos);
-    this.onChanges.forEach(function(cb) {
-        cb();
-    });
-};
+    inform() {
+        Utils.store(this.key, this.todos);
+        this.onChanges.forEach(cb => cb())
+    }
 
-TodoModel.prototype.addTodo = function(title) {
-    this.todos = this.todos.concat({
-        id: Utils.uuid(),
-        title: title,
-        completed: false,
-        idx: this.todos.length,
-        tempIdx: this.todos.length
-    });
-
-    this.inform();
-};
-
-TodoModel.prototype.toggleAll = function(checked) {
-    // Note: it's usually better to use immutable data structures since they're
-    // easier to reason about and React works very well with them. That's why
-    // we use map() and filter() everywhere instead of mutating the array or
-    // todo items themselves.
-    this.todos = this.todos.map(function(todo) {
-        return Utils.extend({}, todo, {
-            completed: checked
+    addTodo(title) {
+        this.todos = this.todos.concat({
+            id: Utils.uuid(),
+            title: title,
+            completed: false,
+            idx: this.todos.length,
+            tempIdx: this.todos.length
         });
-    });
-
-    this.inform();
-};
-
-TodoModel.prototype.toggle = function(todoToToggle) {
-    this.todos = this.todos.map(function(todo) {
-        return todo !== todoToToggle ?
-            todo :
-            Utils.extend({}, todo, {
-                completed: !todo.completed
-            });
-    });
-
-    this.inform();
-};
-
-TodoModel.prototype.destroy = function(todo) {
-    this.todos = this.todos.filter(function(candidate) {
-        return candidate !== todo;
-    });
-
-    this.inform();
-};
-
-TodoModel.prototype.save = function(todoToSave, text) {
-    this.todos = this.todos.map(function(todo) {
-        return todo !== todoToSave ? todo : Utils.extend({}, todo, {
-            title: text
-        });
-    });
-
-    this.inform();
-};
-
-TodoModel.prototype.clearCompleted = function() {
-    this.todos = this.todos.filter(function(todo) {
-        return !todo.completed;
-    });
-
-    this.inform();
-};
-
-TodoModel.prototype.swap = function() {
-    if (this.idxFrom !== this.idxTo && this.idxFrom !== undefined && this.idxTo !== undefined) {
-        var itemFrom = this.todos[this.idxFrom];
-        var itemTo = this.todos[this.idxTo];
-
-        this.todos[this.idxFrom] = itemTo;
-        this.todos[this.idxTo] = itemFrom;
-        this.idxFrom = this.idxTo;
 
         this.inform();
     }
-    this.idxTo = undefined;
-};
 
-TodoModel.prototype.setFrom = function(idxFrom) {
-    this.todoCopy = this.todos.slice();
+    toggleAll(checked) {
+        // Note: it's usually better to use immutable data structures since they're
+        // easier to reason about and React works very well with them. That's why
+        // we use map() and filter() everywhere instead of mutating the array or
+        // todo items themselves.
+        this.todos = this.todos.map(todo => {
+            return Utils.extend({}, todo, {
+                completed: checked
+            });
+        });
 
-    this.idxFrom = idxFrom;
-};
+        this.inform();
+    }
 
-TodoModel.prototype.setTo = function(idxTo) {
-    this.idxTo = idxTo;
+    toggle(todoToToggle) {
+        this.todos = this.todos.map(todo => {
+            return todo !== todoToToggle ?
+                todo :
+                Utils.extend({}, todo, {
+                    completed: !todo.completed
+                });
+        });
 
-    this.swap();
-};
+        this.inform();
+    }
+
+    destroy(todo) {
+        this.todos = this.todos.filter(candidate => candidate !== todo);
+
+        this.inform();
+    }
+
+    save(todoToSave, text) {
+        this.todos = this.todos.map(todo => todo !== todoToSave ? todo : Utils.extend({}, todo, { title: text }));
+
+        this.inform();
+    }
+
+    clearCompleted() {
+        this.todos = this.todos.filter(todo => !todo.completed);
+
+        this.inform();
+    }
+
+    swap() {
+        if (this.idxFrom !== this.idxTo && this.idxFrom !== undefined && this.idxTo !== undefined) {
+            const itemFrom = this.todos[this.idxFrom];
+            const itemTo = this.todos[this.idxTo];
+
+            this.todos[this.idxFrom] = itemTo;
+            this.todos[this.idxTo] = itemFrom;
+            this.idxFrom = this.idxTo;
+
+            this.inform();
+        }
+        this.idxTo = undefined;
+    }
+
+    setFrom(idxFrom) {
+        this.todoCopy = this.todos.slice();
+
+        this.idxFrom = idxFrom;
+    }
+
+    setTo(idxTo) {
+        this.idxTo = idxTo;
+
+        this.swap();
+    }
+}
 
 export default TodoModel;
-// app.TodoModel = TodoModel;

@@ -1,14 +1,13 @@
 import React from 'react';
 import Utils from 'utils';
 import classNames from 'classnames';
-// TODO: unable to import with syntax: import {TodoModel, CONST} from 'app';
 import app from 'app';
 
-var TodoFooter = React.createClass({
-    render: function () {
-        var activeTodoWord = Utils.pluralize(this.props.count, 'item');
-        var clearButton = null;
+class TodoFooter extends React.Component {
+    render() {
+        const activeTodoWord = Utils.pluralize(this.props.count, 'item');
 
+        let clearButton = null;
         if (this.props.completedCount > 0) {
             clearButton = (
                 <button
@@ -20,8 +19,8 @@ var TodoFooter = React.createClass({
         }
 
         // Cache `classNames` since it'll be used often
-        var cx = classNames;
-        var nowShowing = this.props.nowShowing;
+        const cx = classNames;
+        const nowShowing = this.props.nowShowing;
         return (
             <footer className="footer">
                 <span className="todo-count">
@@ -35,7 +34,7 @@ var TodoFooter = React.createClass({
                                 All
                         </a>
                     </li>
-                    {' '}
+                    &nbsp;
                     <li>
                         <a
                             href="#/active"
@@ -43,7 +42,7 @@ var TodoFooter = React.createClass({
                                 Active
                         </a>
                     </li>
-                    {' '}
+                    &nbsp;
                     <li>
                         <a
                             href="#/completed"
@@ -56,6 +55,6 @@ var TodoFooter = React.createClass({
             </footer>
         );
     }
-});
+}
 
 export default TodoFooter;
