@@ -1,9 +1,7 @@
 import React from 'react';
 import Utils from 'utils';
 import classNames from 'classnames';
-
-var ESCAPE_KEY = 27;
-var ENTER_KEY = 13;
+import app from 'app';
 
 var TodoItem = React.createClass({
     handleSubmit: function (event) {
@@ -22,10 +20,10 @@ var TodoItem = React.createClass({
     },
 
     handleKeyDown: function (event) {
-        if (event.which === ESCAPE_KEY) {
+        if (event.which === app.CONST.ESCAPE_KEY) {
             this.setState({editText: this.props.todo.title});
             this.props.onCancel(event);
-        } else if (event.which === ENTER_KEY) {
+        } else if (event.which === app.CONST.ENTER_KEY) {
             this.handleSubmit(event);
         }
     },
