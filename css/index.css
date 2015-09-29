@@ -1,0 +1,9 @@
+/* Add rule to change the former label for a span to make drag work in Firefox */
+.todo-list li span {
+    white-space: pre;
+    padding: 15px 60px 15px 15px;
+    margin-left: 45px;
+    display: block;
+    line-height: 1.2;
+    transition: color 0.4s ease 0s;
+}
