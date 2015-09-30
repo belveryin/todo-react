@@ -3,11 +3,12 @@ import {Router} from 'director';
 import TodoModel from 'todoModel';
 import TodoItem from 'todoItem';
 import TodoFooter from 'footer';
+import store from 'store';
 
 require("../node_modules/todomvc-app-css/index.css");
 require("../css/index.css");
 
-const CONST = {
+export const CONST = {
     STATUS: {
         ALL_TODOS: 'all',
         ACTIVE_TODOS: 'active',
@@ -17,7 +18,7 @@ const CONST = {
     ESCAPE_KEY: 27
 };
 
-class TodoApp extends React.Component {
+export class TodoApp extends React.Component {
     constructor(props) {
         super(props);
         this.state = {}
@@ -174,16 +175,16 @@ class TodoApp extends React.Component {
     }
 }
 
-export default {TodoModel, CONST};
+store.onListLoad().then(() => {
+    const model = new TodoModel(store.getListId());
 
-const model = new TodoModel('react-todos');
+    const render = () => {
+        React.render(
+            <TodoApp model={model}/>,
+            document.getElementsByClassName('todoapp')[0]
+        );
+    };
 
-const render = () => {
-    React.render(
-        <TodoApp model={model}/>,
-        document.getElementsByClassName('todoapp')[0]
-    );
-};
-
-model.subscribe(render);
-render();
+    model.subscribe(render);
+    render();
+});

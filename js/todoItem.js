@@ -1,7 +1,7 @@
 import React from 'react';
-import Utils from 'utils';
+import utils from 'utils';
 import classNames from 'classnames';
-import app from 'app';
+import {CONST} from 'app';
 
 class TodoItem extends React.Component {
     constructor(props) {
@@ -25,10 +25,10 @@ class TodoItem extends React.Component {
     }
 
     handleKeyDown(event) {
-        if (event.which === app.CONST.ESCAPE_KEY) {
+        if (event.which === CONST.ESCAPE_KEY) {
             this.setState({editText: this.props.todo.title});
             this.props.onCancel(event);
-        } else if (event.which === app.CONST.ENTER_KEY) {
+        } else if (event.which === CONST.ENTER_KEY) {
             this.handleSubmit(event);
         }
     }
@@ -58,13 +58,13 @@ class TodoItem extends React.Component {
         // for the drag to properly work
         event.dataTransfer.setData("text/html", event.currentTarget);
 
-        this.props.setFrom(Utils.indexOfChild(event.currentTarget));
+        this.props.setFrom(utils.indexOfChild(event.currentTarget));
     }
 
     dragOver(event) {
         event.preventDefault();
 
-        this.props.setTo(Utils.indexOfChild(event.currentTarget));
+        this.props.setTo(utils.indexOfChild(event.currentTarget));
     }
 
     render() {

@@ -1,11 +1,11 @@
 import React from 'react';
-import Utils from 'utils';
+import utils from 'utils';
 import classNames from 'classnames';
-import app from 'app';
+import {CONST} from 'app';
 
 class TodoFooter extends React.Component {
     render() {
-        const activeTodoWord = Utils.pluralize(this.props.count, 'item');
+        const activeTodoWord = utils.pluralize(this.props.count, 'item');
 
         let clearButton = null;
         if (this.props.completedCount > 0) {
@@ -30,7 +30,7 @@ class TodoFooter extends React.Component {
                     <li>
                         <a
                             href="#/"
-                            className={cx({selected: nowShowing === app.CONST.STATUS.ALL_TODOS})}>
+                            className={cx({selected: nowShowing === CONST.STATUS.ALL_TODOS})}>
                                 All
                         </a>
                     </li>
@@ -38,7 +38,7 @@ class TodoFooter extends React.Component {
                     <li>
                         <a
                             href="#/active"
-                            className={cx({selected: nowShowing === app.CONST.STATUS.ACTIVE_TODOS})}>
+                            className={cx({selected: nowShowing === CONST.STATUS.ACTIVE_TODOS})}>
                                 Active
                         </a>
                     </li>
@@ -46,7 +46,7 @@ class TodoFooter extends React.Component {
                     <li>
                         <a
                             href="#/completed"
-                            className={cx({selected: nowShowing === app.CONST.STATUS.COMPLETED_TODOS})}>
+                            className={cx({selected: nowShowing === CONST.STATUS.COMPLETED_TODOS})}>
                                 Completed
                         </a>
                     </li>
