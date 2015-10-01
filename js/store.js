@@ -6,7 +6,6 @@ const store = {};
 (function() {
     let listId;
     let items;
-    let taskRevision = 0;
 
     // Returns an instance of the Wunderlist SDK setup with the correct client ID and user access token
     // and sets up a single WebSocket connection for REST over socket proxying
@@ -44,11 +43,12 @@ const store = {};
                     listId = lists[0].id;
                     Promise.all([getListTasks(false), getListTasks(true), getTaskPositions()]).then(function(res) {
                         const tasksOrder = res[2];
-                        const todos = _.flatten(res.slice(0, 1));
+                        const todos = _.flatten(res.slice(0, 2));
 
                         items = todos.map(function(todo) {
                             return {
                                 id: todo.id,
+                                revision: todo.revision,
                                 title: todo.title,
                                 completed: todo.completed
                             };
@@ -61,6 +61,12 @@ const store = {};
                         console.error(error);
                         resolve();
                     });
+
+                    WunderlistAPI.bindTo(WunderlistAPI.restSocket, 'event', function (data) {
+                        console.log('ws', data);
+                        // debugger;
+                    });
+
                 }).fail(function(resp, error) {
                     console.error('there was a problem');
                     resolve();
@@ -80,35 +86,34 @@ const store = {};
             }).done(function(taskData, statusCode){
                 resolve({
                     id: taskData.id,
+                    revision: taskData.revision,
                     title: taskData.title,
                     completed: taskData.completed
                 });
             }).fail(function(resp, error) {
                 console.error('there was a problem');
-                resolve();
+                reject();
             });
         });
     };
 
     store.saveItem = (item) => {
         return new Promise(function(resolve, reject) {
-            WunderlistAPI.http.tasks.update(item.id, taskRevision, {
+            WunderlistAPI.http.tasks.update(item.id, item.revision, {
                 title: item.title,
                 completed: item.completed
             }).done(function(taskData, statusCode){
                 resolve();
             }).fail(function(resp, error) {
                 console.error('there was a problem');
-                resolve();
+                reject();
             });
         });
     };
 
     store.deleteItem = (item) => {
         return new Promise(function(resolve, reject) {
-            WunderlistAPI.http.tasks.deleteID(item.id, taskRevision).always(function(resp, statusCode){
-                resolve();
-            });
+            WunderlistAPI.http.tasks.deleteID(item.id, item.revision).always(() => resolve());
         });
     };
 })();

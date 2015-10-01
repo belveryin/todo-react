@@ -22,10 +22,10 @@ class TodoModel {
     }
 
     addTodo(title) {
-        store.createItem(title, this.todos.length).then(function(todo) {
+        store.createItem(title, this.todos.length).then(todo => {
             this.todos = this.todos.concat(todo);
             this.inform();
-        }.bind(this));
+        });
     }
 
     toggleAll(checked) {
@@ -33,48 +33,59 @@ class TodoModel {
         // easier to reason about and React works very well with them. That's why
         // we use map() and filter() everywhere instead of mutating the array or
         // todo items themselves.
-        // TODO: update with store abstraction
-        this.todos = this.todos.map(todo => {
+        const todos = this.todos.map(todo => {
             return utils.extend({}, todo, {
                 completed: checked
             });
         });
 
-        this.inform();
+        Promise.all(todos.map(store.saveItem)).then(() => {
+            this.todos = todos
+            this.inform();
+        });
     }
 
     toggle(todoToToggle) {
-        // TODO: update with store abstraction
-        this.todos = this.todos.map(todo => {
-            return todo !== todoToToggle ?
-                todo :
-                utils.extend({}, todo, {
-                    completed: !todo.completed
-                });
+        const todoToToggleToggled = utils.extend({}, todoToToggle, {
+            completed: !todoToToggle.completed
         });
 
-        this.inform();
+        store.saveItem(todoToToggleToggled).then(() => {
+            this.todos = this.todos.map(todo => {
+                return todo !== todoToToggle ?
+                    todo :
+                    utils.extend({}, todo, {
+                        completed: !todo.completed
+                    });
+            });
+
+            this.inform();
+        });
     }
 
     destroy(todoToDestroy) {
-        // TODO: update with store abstraction
-        this.todos = this.todos.filter(todo => todo !== todoToDestroy);
-
-        this.inform();
+        store.deleteItem(todoToDestroy).then(() => {
+            this.todos = this.todos.filter(todo => todo !== todoToDestroy);
+            this.inform();
+        });
     }
 
     save(todoToSave, text) {
-        // TODO: update with store abstraction
-        this.todos = this.todos.map(todo => todo !== todoToSave ? todo : utils.extend({}, todo, { title: text }));
+        const todoToSaveSaved = utils.extend({}, todoToSave, {
+            title: text
+        });
 
-        this.inform();
+        store.saveItem(todoToSaveSaved).then(() => {
+            this.todos = this.todos.map(todo => todo !== todoToSave ? todo : todoToSaveSaved);
+            this.inform();
+        });
     }
 
     clearCompleted() {
-        // TODO: update with store abstraction
-        this.todos = this.todos.filter(todo => !todo.completed);
-
-        this.inform();
+        Promise.all(this.todos.filter(todo => todo.completed).map(store.deleteItem)).then(() => {
+            this.todos = this.todos.filter(todo => !todo.completed);
+            this.inform();
+        });
     }
 
     swap() {
