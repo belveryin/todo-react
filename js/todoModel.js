@@ -1,5 +1,6 @@
 import utils from 'utils';
 import store from 'store';
+import _ from 'lodash';
 
 // Generic "model" object. You can use whatever
 // framework you want. For this application it
@@ -89,7 +90,6 @@ class TodoModel {
     }
 
     swap() {
-        // TODO: update with store abstraction
         if (this.idxFrom !== this.idxTo && this.idxFrom !== undefined && this.idxTo !== undefined) {
             const itemFrom = this.todos[this.idxFrom];
             const itemTo = this.todos[this.idxTo];
@@ -98,7 +98,7 @@ class TodoModel {
             this.todos[this.idxTo] = itemFrom;
             this.idxFrom = this.idxTo;
 
-            this.inform();
+            store.saveItemPositions(_.pluck(this.todos, 'id')).then(() => this.inform());
         }
         this.idxTo = undefined;
     }
