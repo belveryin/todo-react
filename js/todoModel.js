@@ -89,6 +89,11 @@ class TodoModel {
         });
     }
 
+    updateItems(todos) {
+        this.todos = store.getItems();
+        this.inform();
+    }
+
     swap() {
         if (this.idxFrom !== this.idxTo && this.idxFrom !== undefined && this.idxTo !== undefined) {
             const itemFrom = this.todos[this.idxFrom];

@@ -2,22 +2,20 @@ import WunderlistSDK from '../dist/wunderlist.sdk.js';
 import _ from 'lodash';
 
 const store = {};
+class Store {
+    constructor() {
+        this.listId;
+        this.listPositionRevision;
+        this.items;
+        this.WunderlistAPI = new WunderlistSDK({
+            accessToken: '19431da9c0b70263ba036e2b33fe1fa71b4687af4573fab141ecab879e35',
+            clientID: '68d45e76b1b6bd0c9d63'
+        });
+    }
 
-(function() {
-    let listId;
-    let listPositionRevision;
-    let items;
-
-    // Returns an instance of the Wunderlist SDK setup with the correct client ID and user access token
-    // and sets up a single WebSocket connection for REST over socket proxying
-    const WunderlistAPI = new WunderlistSDK({
-        accessToken: '19431da9c0b70263ba036e2b33fe1fa71b4687af4573fab141ecab879e35',
-        clientID: '68d45e76b1b6bd0c9d63'
-    });
-
-    function getListTasks(completed) {
-        return new Promise(function (resolve, reject) {
-            WunderlistAPI.http.tasks.forList(listId, completed).done(function(tasksData, statusCode) {
+    getListTasks(completed) {
+        return new Promise((resolve, reject) => {
+            this.WunderlistAPI.http.tasks.forList(this.listId, completed).done(function(tasksData, statusCode) {
                 resolve(tasksData);
             }).fail(function(resp, code) {
                 console.error(resp, code);
@@ -26,98 +24,107 @@ const store = {};
         });
     }
 
-    function getTaskPositions() {
-        return new Promise(function (resolve, reject) {
-            WunderlistAPI.http.task_positions.forList(listId).done(function(tasksPositions, statusCode) {
-                listPositionRevision = tasksPositions[0].revision;
+    getTaskPositions() {
+        return new Promise((resolve, reject) => {
+            this.WunderlistAPI.http.task_positions.forList(this.listId).done((tasksPositions, statusCode) => {
+                this.listPositionRevision = tasksPositions[0].revision;
 
                 resolve(tasksPositions[0].values);
-            }).fail(function(resp, code) {
+            }).fail((resp, code) => {
                 console.error(resp, code);
                 resolve([]);
             });
         });
     }
 
-    store.onListLoad = function() {
-        return new Promise(function (resolve, reject) {
-            WunderlistAPI.initialized.done(function () {
-                WunderlistAPI.http.lists.all().done(function(lists) {
-                    listId = lists[0].id;
+    getAllTasks() {
+        return Promise.all([this.getListTasks(false), this.getListTasks(true), this.getTaskPositions()]).then((res) => {
+            const taskPositions = res[2];
+            const todos = _.flatten(res.slice(0, 2));
 
-                    Promise.all([getListTasks(false), getListTasks(true), getTaskPositions()]).then(function(res) {
-                        const taskPositions = res[2];
-                        const todos = _.flatten(res.slice(0, 2));
+            this.items = todos.sort((todoA, todoB) => {
+                return taskPositions.indexOf(todoA.id) - taskPositions.indexOf(todoB.id);
+            });
 
-                        items = todos.sort(function(todoA, todoB) {
-                            return taskPositions.indexOf(todoA.id) - taskPositions.indexOf(todoB.id);
-                        });
+            return this.items;
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
 
-                        resolve();
-                    }).catch(function(error) {
-                        console.error(error);
-                        resolve();
+    onListLoad() {
+        return new Promise((resolve, reject) => {
+            this.WunderlistAPI.initialized.done(() => {
+                this.WunderlistAPI.http.lists.all().done((lists) => {
+                    this.listId = lists[0].id;
+
+                    this.getAllTasks().then(() => resolve());
+
+                    this.WunderlistAPI.bindTo(this.WunderlistAPI.restSocket, 'event', (data) => {
+                        if (data && data.operation === 'update') {
+                            console.log('ws', data);
+                        }
                     });
-
-                    WunderlistAPI.bindTo(WunderlistAPI.restSocket, 'event', function (data) {
-                        console.log('ws', data);
-                    });
-
-                }).fail(function(resp, error) {
+                }).fail((resp, error) => {
                     console.error('there was a problem');
-                    resolve();
+                    reject();
                 });
             });
         });
-    };
+    }
 
-    store.getListId = () => listId;
-    store.getItems = () => items;
+    getListId() {
+        return this.listId
+    }
 
-    store.createItem = (title, idx) => {
-        return new Promise(function(resolve, reject) {
-            WunderlistAPI.http.tasks.create({
-                list_id: listId,
+    getItems() {
+        return this.items
+    }
+
+    createItem(title, idx) {
+        return new Promise((resolve, reject) => {
+            this.WunderlistAPI.http.tasks.create({
+                list_id: this.listId,
                 title: title
-            }).done(function(taskData, statusCode){
+            }).done((taskData, statusCode) => {
                 resolve(taskData);
-            }).fail(function(resp, error) {
+            }).fail((resp, error) => {
                 console.error('there was a problem');
                 reject();
             });
         });
-    };
+    }
 
-    store.saveItem = (item) => {
-        return new Promise(function(resolve, reject) {
-            WunderlistAPI.http.tasks.update(item.id, item.revision, {
+    saveItem(item) {
+        return new Promise((resolve, reject) => {
+            this.WunderlistAPI.http.tasks.update(item.id, item.revision, {
                 title: item.title,
                 completed: item.completed
-            }).done(function(taskData, statusCode){
+            }).done((taskData, statusCode) => {
                 resolve();
-            }).fail(function(resp, error) {
+            }).fail((resp, error) => {
                 console.error('there was a problem');
                 reject();
             });
         });
-    };
+    }
 
-    store.deleteItem = (item) => {
-        return new Promise(function(resolve, reject) {
-            WunderlistAPI.http.tasks.deleteID(item.id, item.revision).always(() => resolve());
+    deleteItem(item) {
+        return new Promise((resolve, reject) => {
+            this.WunderlistAPI.http.tasks.deleteID(item.id, item.revision).always(() => resolve());
         });
-    };
+    }
 
-    store.saveItemPositions = (sortedIds) => {
-        return new Promise(function(resolve, reject) {
-            WunderlistAPI.http.task_positions.update(listId, listPositionRevision, { values: sortedIds }).done(function (taskPositionsData, statusCode) {
-                listPositionRevision = taskPositionsData.revision;
+    saveItemPositions(sortedIds) {
+        return new Promise((resolve, reject) => {
+            this.WunderlistAPI.http.task_positions.update(this.listId, this.listPositionRevision, { values: sortedIds }).done((taskPositionsData, statusCode) => {
+                this.listPositionRevision = taskPositionsData.revision;
                 resolve();
-            }).fail(function (resp, code) {
+            }).fail((resp, code) => {
                 reject();
             });
         });
-    };
-})();
+    }
+}
 
-export default store;
+export default new Store();
