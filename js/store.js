@@ -50,7 +50,7 @@ const store = {};
                         const todos = _.flatten(res.slice(0, 2));
 
                         items = todos.sort(function(todoA, todoB) {
-                            return taskPositions.indexOf(todoA.id) - taskPositions.indexOf(todoB);
+                            return taskPositions.indexOf(todoA.id) - taskPositions.indexOf(todoB.id);
                         });
 
                         resolve();
