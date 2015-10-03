@@ -175,16 +175,16 @@ export class TodoApp extends React.Component {
     }
 }
 
-store.onListLoad().then(() => {
-    const model = new TodoModel(store.getListId());
+const model = new TodoModel();
+const render = () => {
+    React.render(
+        <TodoApp model={model}/>,
+        document.getElementsByClassName('todoapp')[0]
+    );
+};
+model.subscribe(render);
 
-    const render = () => {
-        React.render(
-            <TodoApp model={model}/>,
-            document.getElementsByClassName('todoapp')[0]
-        );
-    };
-
-    model.subscribe(render);
+store.setListModel(model);
+store.loadList().then(() => {
     render();
 });

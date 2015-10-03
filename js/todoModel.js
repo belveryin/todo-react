@@ -2,15 +2,10 @@ import utils from 'utils';
 import store from 'store';
 import _ from 'lodash';
 
-// Generic "model" object. You can use whatever
-// framework you want. For this application it
-// may not even be worth separating this logic
-// out, but we do this to demonstrate one way to
-// separate out parts of your application.
 class TodoModel {
-    constructor(key) {
-        this.key = key;
-        this.todos = store.getItems();
+    constructor() {
+        this.key;
+        this.todos;
         this.onChanges = [];
     }
 
@@ -20,6 +15,15 @@ class TodoModel {
 
     inform() {
         this.onChanges.forEach(cb => cb())
+    }
+
+    setKey(key) {
+        this.key = key;
+    }
+
+    setTodos(todos) {
+        this.todos = todos;
+        this.inform();
     }
 
     addTodo(title) {

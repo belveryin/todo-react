@@ -1,7 +1,6 @@
 import WunderlistSDK from '../dist/wunderlist.sdk.js';
 import _ from 'lodash';
 
-const store = {};
 class Store {
     constructor() {
         this.listId;
@@ -11,6 +10,11 @@ class Store {
             accessToken: '19431da9c0b70263ba036e2b33fe1fa71b4687af4573fab141ecab879e35',
             clientID: '68d45e76b1b6bd0c9d63'
         });
+        this.listModel;
+    }
+
+    setListModel(listModel) {
+        this.listModel = listModel;
     }
 
     getListTasks(completed) {
@@ -52,19 +56,29 @@ class Store {
         });
     }
 
-    onListLoad() {
+    watchAndUpdateOnListChanges() {
+        this.WunderlistAPI.bindTo(this.WunderlistAPI.restSocket, 'event', (data) => {
+            if (data && data.operation === 'update') {
+                this.getAllTasks().then(() => this.listModel.setTodos(this.items));
+            }
+        });
+    }
+
+    loadList() {
         return new Promise((resolve, reject) => {
             this.WunderlistAPI.initialized.done(() => {
                 this.WunderlistAPI.http.lists.all().done((lists) => {
                     this.listId = lists[0].id;
 
-                    this.getAllTasks().then(() => resolve());
+                    this.getAllTasks().then(() => {
+                        this.watchAndUpdateOnListChanges();
 
-                    this.WunderlistAPI.bindTo(this.WunderlistAPI.restSocket, 'event', (data) => {
-                        if (data && data.operation === 'update') {
-                            console.log('ws', data);
-                        }
+                        this.listModel.setKey(this.listId);
+                        this.listModel.setTodos(this.items);
+
+                        resolve()
                     });
+
                 }).fail((resp, error) => {
                     console.error('there was a problem');
                     reject();
@@ -127,4 +141,6 @@ class Store {
     }
 }
 
-export default new Store();
+// export one instance (singleton)
+const store = new Store();
+export default store;
