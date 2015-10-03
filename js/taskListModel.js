@@ -74,7 +74,7 @@ class TaskListModel {
             });
         });
 
-        Promise.all(tasks.map(store.saveTask)).then((savedTasks) => {
+        Promise.all(tasks.map(store.saveTask.bind(store))).then((savedTasks) => {
             this.tasks = savedTasks;
             this.inform();
         });
@@ -128,7 +128,7 @@ class TaskListModel {
      * Delete the completed tasks
      */
     clearCompleted() {
-        Promise.all(this.tasks.filter(task => task.completed).map(store.deleteTask)).then(() => {
+        Promise.all(this.tasks.filter(task => task.completed).map(store.deleteTask.bind(store))).then(() => {
             this.tasks = this.tasks.filter(task => !task.completed);
             this.inform();
         });
