@@ -3,9 +3,12 @@ import utils from 'utils';
 import classNames from 'classnames';
 import {CONST} from 'app';
 
-class TodoFooter extends React.Component {
+/**
+ * React component with the view of the footer to filter the completed tasks.
+ */
+class FooterView extends React.Component {
     render() {
-        const activeTodoWord = utils.pluralize(this.props.count, 'item');
+        const activeTaskWord = utils.pluralize(this.props.count, 'task');
 
         let clearButton = null;
         if (this.props.completedCount > 0) {
@@ -24,13 +27,13 @@ class TodoFooter extends React.Component {
         return (
             <footer className="footer">
                 <span className="todo-count">
-                    <strong>{this.props.count}</strong> {activeTodoWord} left
+                    <strong>{this.props.count}</strong> {activeTaskWord} left
                 </span>
                 <ul className="filters">
                     <li>
                         <a
                             href="#/"
-                            className={cx({selected: nowShowing === CONST.STATUS.ALL_TODOS})}>
+                            className={cx({selected: nowShowing === CONST.STATUS.ALL_TASKS})}>
                                 All
                         </a>
                     </li>
@@ -38,7 +41,7 @@ class TodoFooter extends React.Component {
                     <li>
                         <a
                             href="#/active"
-                            className={cx({selected: nowShowing === CONST.STATUS.ACTIVE_TODOS})}>
+                            className={cx({selected: nowShowing === CONST.STATUS.ACTIVE_TASKS})}>
                                 Active
                         </a>
                     </li>
@@ -46,7 +49,7 @@ class TodoFooter extends React.Component {
                     <li>
                         <a
                             href="#/completed"
-                            className={cx({selected: nowShowing === CONST.STATUS.COMPLETED_TODOS})}>
+                            className={cx({selected: nowShowing === CONST.STATUS.COMPLETED_TASKS})}>
                                 Completed
                         </a>
                     </li>
@@ -57,4 +60,4 @@ class TodoFooter extends React.Component {
     }
 }
 
-export default TodoFooter;
+export default FooterView;

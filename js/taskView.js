@@ -3,7 +3,7 @@ import utils from 'utils';
 import classNames from 'classnames';
 import {CONST} from 'app';
 
-class TodoItem extends React.Component {
+class TaskView extends React.Component {
     constructor(props) {
         super(props);
         this.state = {}
@@ -15,18 +15,18 @@ class TodoItem extends React.Component {
             this.props.onSave(val);
             this.setState({editText: val});
         } else {
-            this.props.onDestroy();
+            this.props.onDelete();
         }
     }
 
     handleEdit() {
         this.props.onEdit();
-        this.setState({editText: this.props.todo.title});
+        this.setState({editText: this.props.task.title});
     }
 
     handleKeyDown(event) {
         if (event.which === CONST.ESCAPE_KEY) {
-            this.setState({editText: this.props.todo.title});
+            this.setState({editText: this.props.task.title});
             this.props.onCancel(event);
         } else if (event.which === CONST.ENTER_KEY) {
             this.handleSubmit(event);
@@ -65,12 +65,13 @@ class TodoItem extends React.Component {
         event.preventDefault();
 
         this.props.setTo(utils.indexOfChild(event.currentTarget));
+        this.props.swap();
     }
 
     render() {
         return (
             <li className={classNames({
-                    completed: this.props.todo.completed,
+                    completed: this.props.task.completed,
                     editing: this.props.editing
                 })}
                 /* Add drag and drop handling */
@@ -81,14 +82,14 @@ class TodoItem extends React.Component {
                     <input
                         className="toggle"
                         type="checkbox"
-                        checked={this.props.todo.completed}
+                        checked={this.props.task.completed}
                         onChange={this.props.onToggle}
                     />
                     {/* Change label for span to be able to drag in Firefox */}
                     <span onDoubleClick={this.handleEdit.bind(this)}>
-                        {this.props.todo.title}
+                        {this.props.task.title}
                     </span>
-                    <button className="destroy" onClick={this.props.onDestroy} />
+                    <button className="destroy" onClick={this.props.onDelete} />
                 </div>
                 <input
                     ref="editField"
@@ -103,4 +104,4 @@ class TodoItem extends React.Component {
     }
 }
 
-export default TodoItem;
+export default TaskView;
