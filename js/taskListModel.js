@@ -28,7 +28,7 @@ class TaskListModel {
      * Inform the subscribed callbacks when there are changes in the model.
      */
     inform() {
-        this.onChanges.forEach(cb => cb())
+        this.onChanges.forEach(cb => cb());
     }
 
     /**
@@ -74,8 +74,8 @@ class TaskListModel {
             });
         });
 
-        Promise.all(tasks.map(store.saveTask)).then(() => {
-            this.tasks = tasks
+        Promise.all(tasks.map(store.saveTask)).then((savedTasks) => {
+            this.tasks = savedTasks;
             this.inform();
         });
     }
@@ -89,15 +89,10 @@ class TaskListModel {
             completed: !taskToToggle.completed
         });
 
-        store.saveTask(taskToToggleToggled).then(() => {
+        store.saveTask(taskToToggleToggled).then((savedTask) => {
             this.tasks = this.tasks.map(task => {
-                return task !== taskToToggle ?
-                    task :
-                    utils.extend(task, {
-                        completed: !task.completed
-                    });
+                return task.id !== savedTask.id ? task : savedTask;
             });
-
             this.inform();
         });
     }
@@ -123,8 +118,8 @@ class TaskListModel {
             title: title
         });
 
-        store.saveTask(taskToSaveSaved).then(() => {
-            this.tasks = this.tasks.map(task => task !== taskToSave ? task : taskToSaveSaved);
+        store.saveTask(taskToSaveSaved).then((savedTask) => {
+            this.tasks = this.tasks.map(task => task.id !== savedTask.id ? task : savedTask);
             this.inform();
         });
     }
