@@ -3,27 +3,46 @@ import utils from 'utils';
 import classNames from 'classnames';
 import {CONST} from 'app';
 
+/**
+ * React component for a task view.
+ */
 class TaskView extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {}
+        this.state = {};
+        this.prevTitle;
     }
 
+    /**
+     * Save the data to the model.
+     * @param   {Event} event   On keydown event.
+     */
     handleSubmit(event) {
         const val = this.state.editText.trim();
-        if (val) {
+        if (val !== this.prevTitle) {
             this.props.onSave(val);
             this.setState({editText: val});
-        } else {
+            this.prevTitle = val;
+        } else if (!val) {
             this.props.onDelete();
+        } else {
+            this.props.onCancel();
         }
     }
 
+    /**
+     * Start editing a task.
+     */
     handleEdit() {
         this.props.onEdit();
         this.setState({editText: this.props.task.title});
+        this.prevTitle = this.props.task.title;
     }
 
+    /**
+     * On key down. Cancel editing if it is the scape key and save to the model if it is the enter key.
+     * @param   {Event} event   On keydown event.
+     */
     handleKeyDown(event) {
         if (event.which === CONST.ESCAPE_KEY) {
             this.setState({editText: this.props.task.title});
@@ -51,6 +70,10 @@ class TaskView extends React.Component {
         }
     }
 
+    /**
+     * Start drag event.
+     * @param   {Event} event   Drag event.
+     */
     dragStart(event) {
         event.dataTransfer.effectAllowed = 'move';
 
@@ -61,6 +84,10 @@ class TaskView extends React.Component {
         this.props.setFrom(utils.indexOfChild(event.currentTarget));
     }
 
+    /**
+     * Drag over event.
+     * @param   {Event} event   Drag event.
+     */
     dragOver(event) {
         event.preventDefault();
 

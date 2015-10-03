@@ -6,7 +6,8 @@ import WunderlistSDK from '../dist/wunderlist.sdk.js';
 class Store {
     constructor() {
         this.listId;
-        this.listPositionRevision;
+        this.listPosition = {};
+        this.taskRevisions = {};
         // Store the instance of WunderlistAPI to avoid recreating it whenever we want to use it.
         // TODO: get accessToken and clientID from the frontend.
         this.WunderlistAPI = new WunderlistSDK({
@@ -17,6 +18,24 @@ class Store {
     }
 
     /**
+     * Save task revisions from @tasks.
+     * @params  {Object[]}  tasks   The tasks to store the revisions from.
+     */
+    _updateTaskRevisions(tasks) {
+        tasks.forEach((task) => this.taskRevisions[task.id] = task.revision);
+    }
+
+    /**
+     * Checks if the @revision from @id is valid checking in the list position and tasks revisions.
+     * @param   {number}    id          The id to check @revision.
+     * @param   {number}    revision    The revision to check.
+     * @returns {boolean}               True if the revision is valid, false if not.
+     */
+    _isValidRevision(id, revision) {
+        return this.listPosition.id === id && this.listPosition.revision === revision || this.taskRevisions[id] === revision;
+    }
+
+    /**
      * Get the tasks from the default list (this.listId).
      * @private
      * @param   {boolean}   completed   If true returns the list of the completed tasks.
@@ -24,9 +43,10 @@ class Store {
      */
     _getListTasks(completed) {
         return new Promise((resolve, reject) => {
-            this.WunderlistAPI.http.tasks.forList(this.listId, completed).done(function(tasksData, statusCode) {
+            this.WunderlistAPI.http.tasks.forList(this.listId, completed).done((tasksData, statusCode) => {
+                this._updateTaskRevisions(tasksData);
                 resolve(tasksData);
-            }).fail(function(resp, code) {
+            }).fail((resp, code) => {
                 console.error(resp, code);
                 reject();
             });
@@ -41,13 +61,35 @@ class Store {
     _getTaskPositions() {
         return new Promise((resolve, reject) => {
             this.WunderlistAPI.http.task_positions.forList(this.listId).done((tasksPositions, statusCode) => {
-                this.listPositionRevision = tasksPositions[0].revision;
+                this.listPosition.id = tasksPositions[0].id;
+                this.listPosition.revision = tasksPositions[0].revision;
 
                 resolve(tasksPositions[0].values);
             }).fail((resp, code) => {
                 console.error(resp, code);
                 reject();
             });
+        });
+    }
+
+    /**
+     * Sort @tasks according to the ids in @positions.
+     * @param   {Object[]}  tasks       The tasks to be sorted.
+     * @param   {number[]}  positions   An array with the sorted ids.
+     * @returns {Object[]}              The sorted tasks.
+     */
+    _sortTasks(tasks, positions) {
+        return tasks.sort((todoA, todoB) => {
+            let aIdx = positions.indexOf(todoA.id);
+            let bIdx = positions.indexOf(todoB.id);
+
+            if (aIdx === -1) {
+                aIdx = tasks.length - 1;
+            }
+            if (bIdx === -1) {
+                bIdx = tasks.length - 1;
+            }
+            return aIdx - bIdx;
         });
     }
 
@@ -60,12 +102,10 @@ class Store {
         // Get tasks, completed tasks and the position of the first ones on the list.
         return Promise.all([this._getListTasks(false), this._getListTasks(true), this._getTaskPositions()]).then((res) => {
             let tasks = res[0];
-            let completedTasks = res[1];
+            const completedTasks = res[1];
             const taskPositions = res[2];
 
-            tasks = tasks.sort((todoA, todoB) => {
-                return taskPositions.indexOf(todoA.id) - taskPositions.indexOf(todoB.id);
-            });
+            tasks = this._sortTasks(tasks, taskPositions);
 
             return tasks.concat(completedTasks);
         }).catch((error) => {
@@ -78,8 +118,8 @@ class Store {
      * @private
      */
     _watchAndUpdateOnListChanges() {
-        this.WunderlistAPI.bindTo(this.WunderlistAPI.restSocket, 'event', (data) => {
-            if (data && data.operation === 'update') {
+        this.WunderlistAPI.bindTo(this.WunderlistAPI.restSocket, 'event', (msg) => {
+            if (msg && msg.operation === 'update' && !this._isValidRevision(msg.subject.id, msg.subject.revision)) {
                 this._getAllTasks().then((tasks) => this.listModel.setTasks(tasks));
             }
         });
@@ -115,7 +155,7 @@ class Store {
                         this.listModel.setListId(this.listId);
                         this.listModel.setTasks(tasks);
 
-                        resolve()
+                        resolve();
                     });
 
                 }).fail((resp, error) => {
@@ -156,7 +196,8 @@ class Store {
                 title: task.title,
                 completed: task.completed
             }).done((taskData, statusCode) => {
-                resolve();
+                this.taskRevisions[taskData.id] = taskData.revision;
+                resolve(taskData);
             }).fail((resp, error) => {
                 console.error('there was a problem');
                 reject();
@@ -182,9 +223,9 @@ class Store {
      */
     saveTaskPositions(sortedIds) {
         return new Promise((resolve, reject) => {
-            this.WunderlistAPI.http.task_positions.update(this.listId, this.listPositionRevision, { values: sortedIds }).done((taskPositionsData, statusCode) => {
+            this.WunderlistAPI.http.task_positions.update(this.listId, this.listPosition.revision, { values: sortedIds }).done((taskPositionsData, statusCode) => {
                 // Update the list position revision.
-                this.listPositionRevision = taskPositionsData.revision;
+                this.listPosition.revision = taskPositionsData.revision;
                 resolve();
             }).fail((resp, code) => {
                 reject();
