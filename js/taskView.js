@@ -77,9 +77,8 @@ class TaskView extends React.Component {
     dragStart(event) {
         event.dataTransfer.effectAllowed = 'move';
 
-        // Firefox requires calling dataTransfer.setData
-        // for the drag to properly work
-        event.dataTransfer.setData("text/html", event.currentTarget);
+        // Firefox and IE11 require calling dataTransfer.setData for the drag to properly work and IE11 only works with type 'Text'
+        event.dataTransfer.setData('Text', '');
 
         this.props.setFrom(utils.indexOfChild(event.currentTarget));
     }
@@ -95,6 +94,14 @@ class TaskView extends React.Component {
         this.props.swap();
     }
 
+    /**
+     * Drag enter event. In IE11 drag over event doesn't work if we do not cancel drag enter.
+     * @param   {Event} event   Drag event.
+     */
+    dragEnter(event) {
+        event.preventDefault();
+    }
+
     render() {
         return (
             <li className={classNames({
@@ -104,7 +111,8 @@ class TaskView extends React.Component {
                 /* Add drag and drop handling */
                 draggable="true"
                 onDragStart={this.dragStart.bind(this)}
-                onDragOver={this.dragOver.bind(this)}>
+                onDragOver={this.dragOver.bind(this)}
+                onDragEnter={this.dragEnter.bind(this)}>
                 <div className="view">
                     <input
                         className="toggle"
