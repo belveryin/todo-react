@@ -162,7 +162,9 @@ class TaskListModel {
             this.tasks[this.idxTo] = taskFrom;
             this.idxFrom = this.idxTo;
 
-            store.saveTaskPositions(_.pluck(this.tasks, 'id')).then(() => this.inform());
+            store.saveTaskPositions(_.pluck(this.tasks, 'id'))
+                .then(() => this.inform())
+                .catch(() => console.log('Something went wrong'));
         }
         this.idxTo = undefined;
     }
