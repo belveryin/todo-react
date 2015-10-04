@@ -1,7 +1,7 @@
 import React from 'react';
 import utils from 'utils';
 import classNames from 'classnames';
-import {CONST} from 'app';
+import config from 'config';
 
 /**
  * React component for a task view.
@@ -44,10 +44,10 @@ class TaskView extends React.Component {
      * @param   {Event} event   On keydown event.
      */
     handleKeyDown(event) {
-        if (event.which === CONST.ESCAPE_KEY) {
+        if (event.which === config.ESCAPE_KEY) {
             this.setState({editText: this.props.task.title});
             this.props.onCancel(event);
-        } else if (event.which === CONST.ENTER_KEY) {
+        } else if (event.which === config.ENTER_KEY) {
             this.handleSubmit(event);
         }
     }

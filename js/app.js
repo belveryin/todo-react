@@ -6,17 +6,6 @@ import store from 'store';
 require("../node_modules/todomvc-app-css/index.css");
 require("../css/index.css");
 
-// Global constants
-export const CONST = {
-    STATUS: {
-        ALL_TASKS: 'all',
-        ACTIVE_TASKS: 'active',
-        COMPLETED_TASKS: 'completed'
-    },
-    ENTER_KEY: 13,
-    ESCAPE_KEY: 27
-};
-
 // Created the model
 const model = new TaskListModel();
 // Render it

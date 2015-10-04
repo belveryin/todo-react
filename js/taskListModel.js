@@ -11,9 +11,6 @@ class TaskListModel {
         this.tasks;
         // List with the list of callbacks to call when there are changes on the model.
         this.onChanges = [];
-        // Indexes saved to perform the swap operation.
-        this.idxFrom;
-        this.idxTo;
     }
 
     /**
@@ -135,38 +132,24 @@ class TaskListModel {
     }
 
     /**
-     * Store the index to swap from.
+     * Swap the elements form indexes idxFrom and idxTo.
      * @param   {number}    idxFrom The index to swap from.
-     */
-    setFrom(idxFrom) {
-        this.idxFrom = idxFrom;
-    }
-
-    /**
-     * Store the index to swap to.
      * @param   {number}    idxFrom The index to swap to.
      */
-    setTo(idxTo) {
-        this.idxTo = idxTo;
-    }
+    swap(idxFrom, idxTo) {
+        if (idxFrom !== idxTo && idxFrom !== undefined && idxTo !== undefined) {
+            const taskFrom = this.tasks[idxFrom];
+            const taskTo = this.tasks[idxTo];
 
-    /**
-     * Swap the elements form indexes this.idxFrom and this.idxTo.
-     */
-    swap() {
-        if (this.idxFrom !== this.idxTo && this.idxFrom !== undefined && this.idxTo !== undefined) {
-            const taskFrom = this.tasks[this.idxFrom];
-            const taskTo = this.tasks[this.idxTo];
-
-            this.tasks[this.idxFrom] = taskTo;
-            this.tasks[this.idxTo] = taskFrom;
-            this.idxFrom = this.idxTo;
+            this.tasks[idxFrom] = taskTo;
+            this.tasks[idxTo] = taskFrom;
 
             store.saveTaskPositions(_.pluck(this.tasks, 'id'))
-                .then(() => this.inform())
-                .catch(() => console.log('Something went wrong'));
+                // Catch it explicitly because there are some issues with FF.
+                .catch(() => console.error('Something went wrong'));
+            // Calling this.inform() after saveTaskPositions is done is a little unresponsive and causes issues(bad requests) in FF.
+            this.inform();
         }
-        this.idxTo = undefined;
     }
 }
 

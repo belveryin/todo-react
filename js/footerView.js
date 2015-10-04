@@ -1,7 +1,7 @@
 import React from 'react';
 import utils from 'utils';
 import classNames from 'classnames';
-import {CONST} from 'app';
+import config from 'config';
 
 /**
  * React component with the view of the footer to filter the completed tasks.
@@ -33,7 +33,7 @@ class FooterView extends React.Component {
                     <li>
                         <a
                             href="#/"
-                            className={cx({selected: nowShowing === CONST.STATUS.ALL_TASKS})}>
+                            className={cx({selected: nowShowing === config.STATUS.ALL_TASKS})}>
                                 All
                         </a>
                     </li>
@@ -41,7 +41,7 @@ class FooterView extends React.Component {
                     <li>
                         <a
                             href="#/active"
-                            className={cx({selected: nowShowing === CONST.STATUS.ACTIVE_TASKS})}>
+                            className={cx({selected: nowShowing === config.STATUS.ACTIVE_TASKS})}>
                                 Active
                         </a>
                     </li>
@@ -49,7 +49,7 @@ class FooterView extends React.Component {
                     <li>
                         <a
                             href="#/completed"
-                            className={cx({selected: nowShowing === CONST.STATUS.COMPLETED_TASKS})}>
+                            className={cx({selected: nowShowing === config.STATUS.COMPLETED_TASKS})}>
                                 Completed
                         </a>
                     </li>

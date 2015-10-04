@@ -1,4 +1,5 @@
 import WunderlistSDK from '../dist/wunderlist.sdk.js';
+import config from 'config';
 
 /**
  * Class that abstracts the interaction with the data source, in this case wunderlist.
@@ -9,10 +10,9 @@ class Store {
         this.listPosition = {};
         this.taskRevisions = {};
         // Store the instance of WunderlistAPI to avoid recreating it whenever we want to use it.
-        // TODO: get accessToken and clientID from the frontend.
         this.WunderlistAPI = new WunderlistSDK({
-            accessToken: '19431da9c0b70263ba036e2b33fe1fa71b4687af4573fab141ecab879e35',
-            clientID: '68d45e76b1b6bd0c9d63'
+            accessToken: config.AUTH.ACCESS_TOKEN,
+            clientID: config.AUTH.CLIENT_ID
         });
         this.listModel;
     }
@@ -223,7 +223,8 @@ class Store {
      */
     saveTaskPositions(sortedIds) {
         return new Promise((resolve, reject) => {
-            this.WunderlistAPI.http.task_positions.update(this.listId, this.listPosition.revision, { values: sortedIds }).done((taskPositionsData, statusCode) => {
+            // Increment this.listPosition.revision just in case there is a new saveTaskPositions before this.listPosition.revision is updated in the then().
+            this.WunderlistAPI.http.task_positions.update(this.listPosition.id, this.listPosition.revision++, { values: sortedIds }).done((taskPositionsData, statusCode) => {
                 // Update the list position revision.
                 this.listPosition.revision = taskPositionsData.revision;
                 resolve();

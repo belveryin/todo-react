@@ -3,7 +3,7 @@ import {Router} from 'director';
 import TaskListModel from 'taskListModel';
 import TaskView from 'taskView';
 import FooterView from 'footerView';
-import {CONST} from 'app';
+import config from 'config';
 
 require("../node_modules/todomvc-app-css/index.css");
 require("../css/index.css");
@@ -15,6 +15,9 @@ class TaskListView extends React.Component {
     constructor(props) {
         super(props);
         this.state = {};
+        // Indexes saved to perform the swap operation.
+        this.idxFrom;
+        this.idxTo;
     }
 
     /**
@@ -23,9 +26,9 @@ class TaskListView extends React.Component {
     componentDidMount() {
         const setState = this.setState;
         const router = Router({
-            '/': setState.bind(this, {nowShowing: CONST.STATUS.ALL_TASKS}),
-            '/active': setState.bind(this, {nowShowing: CONST.STATUS.ACTIVE_TASKS}),
-            '/completed': setState.bind(this, {nowShowing: CONST.STATUS.COMPLETED_TASKS})
+            '/': setState.bind(this, {nowShowing: config.STATUS.ALL_TASKS}),
+            '/active': setState.bind(this, {nowShowing: config.STATUS.ACTIVE_TASKS}),
+            '/completed': setState.bind(this, {nowShowing: config.STATUS.COMPLETED_TASKS})
         });
         router.init('/');
     }
@@ -36,7 +39,7 @@ class TaskListView extends React.Component {
      */
     handleNewTaskKeyDown(event) {
         // If not enter key do not continue.
-        if (event.keyCode !== CONST.ENTER_KEY) {
+        if (event.keyCode !== config.ENTER_KEY) {
             return;
         }
 
@@ -113,7 +116,9 @@ class TaskListView extends React.Component {
      * Swap tasks previously set with setFrom and setTo.
      */
     swap() {
-        this.props.model.swap();
+        this.props.model.swap(this.fromIdx, this.toIdx);
+        this.fromIdx = this.toIdx;
+        this.toIdx = undefined;
     }
 
     /**
@@ -121,7 +126,7 @@ class TaskListView extends React.Component {
      * @param   {number}    fromIdx The index to do the swap from.
      */
     setFrom(fromIdx) {
-        this.props.model.setFrom(fromIdx);
+        this.fromIdx = fromIdx;
     }
 
     /**
@@ -129,7 +134,7 @@ class TaskListView extends React.Component {
      * @param   {number}    toIdx   The index to do the swap to.
      */
     setTo(toIdx) {
-        this.props.model.setTo(toIdx);
+        this.toIdx = toIdx;
     }
 
     render() {
@@ -138,9 +143,9 @@ class TaskListView extends React.Component {
         // Filter the tasks to be shown by the status.
         const shownTasks = tasks.filter(task => {
             switch (this.state.nowShowing) {
-                case CONST.STATUS.ACTIVE_TASKS:
+                case config.STATUS.ACTIVE_TASKS:
                     return !task.completed;
-                case CONST.STATUS.COMPLETED_TASKS:
+                case config.STATUS.COMPLETED_TASKS:
                     return task.completed;
                 default:
                     return true;
